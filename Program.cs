@@ -110,7 +110,12 @@ namespace AG
             }
 
             int numRuns = 10;
-            int[] chromosomeLengths = { 25, 50, 100, 200, 400, 800 };
+            //Długość chromosomu zostanie ustawiona na 24, ponieważ 12 pracowników możemy zakodować na 2 bitach dla 3 zmian (12 * 2)
+            //00 - pracownik nie pracuje
+            //01 - pracownik jest na pierwszej zmianie
+            //10 - pracownik jest na drugiej zmianie
+            //11 - pracownik jest na trzciej zmianie
+            int[] chromosomeLengths = { 24 };
             double[] optimizedParametersRouletteSelection = { 0, -0.02, -0.05, -0.10, -0.25, -0.50, -0.75, -1.0, 0.25, 0.50, 0.75, 0.90 };
             int[] optimizedParametersTournamentSelection = { 2, 3, 4, 6, 9, 14, 20, 28, 40, 60, 90, 140, 200 };
             double[] optimizedParametersMutationFrequency = { 0.0, 0.2, 0.28, 0.4, 0.6, 0.9, 1.4, 2.0, 2.8, 4.0, 6.0, 9.0, 14.0, 20.0 };
@@ -252,11 +257,17 @@ namespace AG
 
 
                         //1.generacja populacji
+                        //Zamiast generować losowe wartości dla chromosomów, generujemy ciągi bitów o wartości 00, 01, 10, 11
 
                         for (int i = 0; i < populationSize; i++)
                         {
-                            for (int m = 0; m < chromosomeLength; m++)
-                                population[i][m] = R.Next(0, 2);
+                            for (int m = 0; m < chromosomeLength; m += 2)
+                                {
+                                    int shift = R.Next(0, 4);
+
+                                    population[i][m] = shift & 1;
+                                    population[i][m + 1] = (shift >> 1) & 1;
+                                }
                         }
 
                         int numberOfFitnessEvaluations = 0;
