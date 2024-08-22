@@ -447,11 +447,13 @@ namespace AG
                                 }
 
 
+                                //Aktualizacja operatora krzyżowania, tak aby nie korzystało z losowych punktów przecięcia jak poprzednia, a operowało na parach bitów zgodnie z naszą reprezentacją chromosomu
                                 for (int s = 0; s < numParents - 1; s++)
                                 {
-                                    for (int m = splitPoints[s]; m < splitPoints[s + 1]; m++)
+                                    for (int m = splitPoints[s]; m < splitPoints[s + 1] - 1; m += 2) //Zmieniono iterację o 2, tak aby operacje prowadzone były na parach bitów
                                     {
                                         childPopulation[i][m] = population[parents[s]][m];
+                                        childPopulation[i][m + 1] = population[parents[s]][m + 1];
                                     }
                                 }
                             }
@@ -464,6 +466,7 @@ namespace AG
                             }
 
 
+                            //Aktualizacja operatora mutacji, tak aby nie zmianiał losowo pojedyńczych bitów w chromosomie, tylko operował na parach bitów                        
                             for (int i = 0; i < populationSize; i++)
                             {
                                 if (R.NextDouble() < 0.1 * mutationFrequency)
@@ -471,11 +474,10 @@ namespace AG
                                     int rm = R.Next((int)(mutationFrequency + 1));
                                     for (int x = 0; x < rm; x++)
                                     {
-                                        int xi = R.Next(chromosomeLength);
-                                        if (population[i][xi] == 0)
-                                            population[i][xi] = 1;
-                                        else
-                                            population[i][xi] = 0;
+                                        int xi = R.Next(0, chromosomeLength / 2);  //Losowanie pary bitów
+                                        int newShift = R.Next(0, 4);
+                                        population[i][xi * 2] = newShift & 1;
+                                        population[i][xi * 2 + 1] = (newShift >> 1) & 1;
                                     }
                                 }
                             }
