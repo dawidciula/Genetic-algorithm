@@ -62,12 +62,54 @@ namespace AG
         static int GetFitness(int[] X)
         {
             int fitness = 0;
-            for (int i = 0; i < X.Length; i++)
+
+            //Tablica przechowująca trzy zmiany
+            int[] shiftCounts = new int[3];
+
+            for (int i = 0; i < X.Length; i += 2)
             {
-                if (IdealSolution[i] == X[i])
+                //Zmiana jest reprezentowana przez parę bitów X oraz X+1
+                int shift = -1;
+
+                if (X[i] == 0 && X[i+1] == 0)
+                    shift = -1;  //Brak zmiany (00)
+                else if (X[i] == 0 && X[i+1] == 1)
+                    shift = 0;  //Zmiana 1 (01)
+                else if (X[i] == 1 && X[i+1] == 0)
+                    shift = 1;  //Zmiana 2 (10)
+                else if (X[i] == 1 && X[i+1] == 1)
+                    shift = 2;  //Zmiana 3 (11)
+
+                //Liczba pracowników na danej zmianie
+                if (shift >= 0 && shift < 3)
+                {
+                    shiftCounts[shift]++;
+                }
+
+                //Porówanie wyniku z IdealSolution
+                if (IdealSolution[i] == X[i] && IdealSolution[i + 1] == X[i + 1])
+                {
                     fitness++;
+                }
             }
-            return fitness;
+
+            //Zapewnienie poprawnej ilośći pracowników na zmianie (na każnej zmianie powinno być obsadzonych 4 pracowników)
+            int expectedWorkersPerShift = 4;
+            for (int shift = 0; shift < 3; shift++)
+            {
+                int difference = Math.Abs(shiftCounts[shift] - expectedWorkersPerShift);
+        
+                if (difference == 0)
+                {
+                    fitness += 10;
+                }
+                else
+                {
+                    fitness += Math.Max(10 - (difference * 2), 0);
+                }
+    }
+
+            return Math.Max(fitness, 0);
         }
 
 
@@ -208,11 +250,13 @@ namespace AG
                         for (int i = 0; i < fitnessToLog.Length; i++)
                             numEvalsForFitnessToLog[i][run] = -1;
 
-                        IdealSolution = new int[chromosomeLength];                      
+                        IdealSolution = new int[chromosomeLength];
 
-                        for (int i = 0; i < chromosomeLength; i++)
+                        for (int i = 0; i < chromosomeLength; i += 2)
                         {
-                            IdealSolution[i] = R.Next(2);
+                            int shift = R.Next(0, 4);
+                            IdealSolution[i] = shift & 1;
+                            IdealSolution[i + 1] = (shift >> 1) & 1;
                         }
 
                       
